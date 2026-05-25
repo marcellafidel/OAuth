@@ -41,20 +41,16 @@ app.get('/auth/google', passport.authenticate('google', {
 }));
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/auth/failed' }),
+  passport.authenticate('google', { failureRedirect: '/auth/failed',session: false }),
   (req, res) => {
     const token = jwt.sign(req.user, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
   }
 );
 
 app.get('/auth/me', (req, res) => {
-  const token = req.cookies.token;
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(' ')[1] || req.cookies.token;
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
@@ -74,3 +70,7 @@ app.get('/auth/failed', (req, res) => {
 });
 
 module.exports = app;
+
+if (require.main === module) {
+  app.listen(5000, () => console.log('Backend jalan di port 5000'));
+}
