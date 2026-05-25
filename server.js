@@ -73,4 +73,4 @@ app.get('/auth/failed', (req, res) => {
   res.status(401).json({ error: 'Login gagal' });
 });
 
-app.listen(5000, () => console.log('Backend jalan di port 5000'));
+module.exports = app;
